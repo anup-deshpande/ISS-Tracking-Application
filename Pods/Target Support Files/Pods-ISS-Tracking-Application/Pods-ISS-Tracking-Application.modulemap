@@ -1,0 +1,6 @@
+framework module Pods_ISS_Tracking_Application {
+  umbrella header "Pods-ISS-Tracking-Application-umbrella.h"
+
+  export *
+  module * { export * }
+}
