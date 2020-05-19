@@ -8,5 +8,7 @@ target 'ISS-Tracking-Application' do
   # Pods for ISS-Tracking-Application
   pod 'GoogleMaps'
   pod 'GooglePlaces'
+  pod 'Alamofire'
+  pod 'SwiftyJSON', '~> 4.0'
 
 end
