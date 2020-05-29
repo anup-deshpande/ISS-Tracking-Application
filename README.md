@@ -5,7 +5,9 @@
 - Given a location find out when the ISS is overhead.
 
 ## Demo
-![](demo.gif)
+<p align="center">
+<img src="demo.gif" width="300" height = "649">
+</p>
 
 ## Credits
 - [Open Notify API](http://open-notify.org/Open-Notify-API)
