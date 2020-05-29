@@ -23,16 +23,26 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        mapView.isMyLocationEnabled = true
+        mapView.isUserInteractionEnabled = false
+        
+        
         self.locationManager.delegate = self
         self.locationManager.startUpdatingLocation()
         
+        let timer = Timer.scheduledTimer(timeInterval: 1.0, target:self, selector: #selector(locateISS), userInfo: nil, repeats: true)
+        
+        placesClient = GMSPlacesClient.shared()
+    }
+    
+    @objc func locateISS(){
         // Get Current Location of ISS
         NetworkManager.instance.getIssCurrentLocation({ (location) in
+            self.mapView.clear()
             let position = CLLocationCoordinate2D(latitude: Double(location.lat)!, longitude: Double(location.long)!)
             let marker = GMSMarker(position: position)
             marker.title = "ISS"
             marker.map = self.mapView
+            marker.icon = #imageLiteral(resourceName: "spaceStation")
             
             let issCurrentLocation = GMSCameraPosition.camera(withLatitude: Double(location.lat)!,
                                                               longitude: Double(location.long)!,
@@ -43,31 +53,15 @@ class ViewController: UIViewController {
             print(error)
         }
         
-        // Get ISS pass time
-        NetworkManager.instance.getIssPassTime(latitude: 1.11, longitude: 1.11, {
-            print("success")
-        }) { (error) in
-            print(error)
-        }
-        
-        let camera = GMSCameraPosition.camera(withLatitude: -33.86, longitude: 151.20, zoom: 6.0)
-        mapView.camera = camera
-        
-        placesClient = GMSPlacesClient.shared()
     }
 
     @IBAction func searchLocationTapped(_ sender: UIBarButtonItem) {
         let autocompleteController = GMSAutocompleteViewController()
         autocompleteController.delegate = self
 
-        // Specify the place data types to return.
-        let fields: GMSPlaceField = GMSPlaceField(rawValue: UInt(GMSPlaceField.name.rawValue) |
-          UInt(GMSPlaceField.placeID.rawValue))!
-        autocompleteController.placeFields = fields
-
         // Specify a filter.
         let filter = GMSAutocompleteFilter()
-        filter.type = .address
+        filter.type = .noFilter
         autocompleteController.autocompleteFilter = filter
 
         // Display the autocomplete view controller.
@@ -75,9 +69,18 @@ class ViewController: UIViewController {
     }
     
     @IBAction func currentLocationTapped(_ sender: UIBarButtonItem) {
+        
         if userLocation != nil{
-            NetworkManager.instance.getIssPassTime(latitude: userLocation!.coordinate.latitude, longitude: userLocation!.coordinate.longitude, {
-                print("success")
+            NetworkManager.instance.getIssPassTime(latitude: userLocation!.coordinate.latitude, longitude: userLocation!.coordinate.longitude, { (dates) in
+                var labelText = ""
+                for i in 0..<dates.count{
+                    labelText += dates[i]
+                    if i != dates.count - 1{
+                        labelText += "\n"
+                    }
+                }
+                
+                self.timeLabel.text = labelText
             }) { (error) in
                 print("error")
             }
@@ -89,9 +92,25 @@ class ViewController: UIViewController {
 
 extension ViewController: GMSAutocompleteViewControllerDelegate{
     func viewController(_ viewController: GMSAutocompleteViewController, didAutocompleteWith place: GMSPlace) {
-        print(place.coordinate.latitude)
-        print(place.coordinate.longitude)
+        
+        NetworkManager.instance.getIssPassTime(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, { (dates) in
+            
+                var labelText = ""
+                for i in 0..<dates.count{
+                    labelText += dates[i]
+                    if i != dates.count - 1{
+                        labelText += "\n"
+                    }
+                }
+                
+                self.timeLabel.text = labelText
+            }) { (error) in
+                print("error")
+            }
+        
         dismiss(animated: true, completion: nil)
+        
+        
     }
     
     func viewController(_ viewController: GMSAutocompleteViewController, didFailAutocompleteWithError error: Error) {
