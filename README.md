@@ -1,3 +1,3 @@
 # ISS-Tracking-Application
 
-()[demo.gif]
+![](demo.gif)
